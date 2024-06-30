@@ -52,6 +52,7 @@ export default function Cronometro(
                 return regressiva(contador - 1)
             }
             else if(contador <= 0) {
+                setStart(false);
                 finalizarTarefa();
             }
             else{
