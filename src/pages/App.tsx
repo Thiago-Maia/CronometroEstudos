@@ -4,14 +4,25 @@ import Formulario from '../components/Formulario';
 import Lista from '../components/Lista';
 import style from './App.module.scss'
 import ITarefa from '../Interfaces/ITarefas';
+import { segundosParaTempo } from '../common/utils/time';
 
 export default function App() {
   const [tarefas, setTarefas] = useState<ITarefa[]>([]);
   const [selecionado, setSelecionado] = useState<ITarefa>();
 
-  function selecionaTarefa(tarefaSelecionada: ITarefa): void {
+  function selecionaTarefa(tarefaSelecionada: ITarefa) {
     setSelecionado(tarefaSelecionada)
-    setTarefas(tarefasAnteriores => tarefasAnteriores.map(tarefa => ({ ...tarefa, selecionado: tarefa.id == tarefaSelecionada.id ? true : false })))
+    setTarefas(tarefasAnteriores => tarefasAnteriores.map(tarefa => ({ ...tarefa, selecionado: tarefa.id === tarefaSelecionada.id ? true : false })))
+  }
+
+  function atualizarTempoTarefaSelecionada(tarefaSelecionada: ITarefa, tempo: number ) {
+    setTarefas(tarefasAnteriores => tarefasAnteriores.map(tarefa => {
+      
+      if(tarefa.id === tarefaSelecionada.id)
+        return {...tarefa, tempo: segundosParaTempo(tempo)}
+
+      return tarefa
+    }))
   }
 
   function finalizarTarefa() {
@@ -42,6 +53,7 @@ export default function App() {
       <Cronometro
         tarefa={selecionado}
         finalizarTarefa={finalizarTarefa}
+        atualizarTempoTarefaSelecionada={atualizarTempoTarefaSelecionada}
       />
     </div>
   );

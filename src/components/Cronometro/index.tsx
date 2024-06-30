@@ -5,24 +5,57 @@ import ITarefa from "../../Interfaces/ITarefas";
 
 import style from './Cronometro.module.scss'
 import { tempoParaSegundos } from "../../common/utils/time";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-export default function Cronometro({ tarefa, finalizarTarefa }: { tarefa: ITarefa | undefined, finalizarTarefa: () => void }) {
-    const [tempo, setTempo] = useState<number>();
+export default function Cronometro(
+    {
+        tarefa,
+        finalizarTarefa,
+        atualizarTempoTarefaSelecionada
+    }:
+        {
+            tarefa: ITarefa | undefined,
+            finalizarTarefa: () => void,
+            atualizarTempoTarefaSelecionada: (tarefa: ITarefa, tempo: number) => void,
+        }
+) {
+
+    const [tempo, setTempo] = useState<number>(0);
+    const [start, setStart] = useState<boolean>(false);
+    const startRef = useRef(start);
 
     useEffect(() => {
         if (tarefa?.tempo)
             setTempo(tempoParaSegundos(tarefa.tempo))
     }, [tarefa]);
 
+    useEffect(() => {
+        startRef.current = start;
+    }, [start]);
+
+    function iniciarRegressiva(contador: number = 0) {
+        setStart(true);
+        regressiva(contador)
+    }
+
+    function pararRegressiva() {
+        if (tarefa) {
+            setStart(false);
+            atualizarTempoTarefaSelecionada(tarefa, tempo);
+        }
+    }
+
     function regressiva(contador: number = 0) {
         setTimeout(() => {
-            if(contador > 0){
+            if (startRef.current && contador > 0) {
                 setTempo(contador - 1)
                 return regressiva(contador - 1)
             }
-            else {
+            else if(contador <= 0) {
                 finalizarTarefa();
+            }
+            else{
+                return
             }
         }, 1000);
     }
@@ -35,10 +68,10 @@ export default function Cronometro({ tarefa, finalizarTarefa }: { tarefa: ITaref
                 <Relogio tempo={tempo} />
             </div>
             <Botao
-                onClick={() => regressiva(tempo)}
+                onClick={() => start ? pararRegressiva() : iniciarRegressiva(tempo)}
                 type="button"
             >
-                Começar!
+                {start ? 'Parar' : 'Começar'}
             </Botao>
         </div>
     )
